@@ -25,7 +25,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     cron \
     git \
-    libssh2-1-dev
+    libssh2-1-dev \
+    libzip-dev
         
 RUN docker-php-ext-install -j$(nproc) curl \
     && docker-php-ext-install -j$(nproc) bcmath \
@@ -58,7 +59,7 @@ RUN cd /tmp && git clone https://git.php.net/repository/pecl/networking/ssh2.git
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install the xdebug extension
-RUN pecl install xdebug && \
+RUN pecl install xdebug-2.7.0beta1 && \
     docker-php-ext-enable xdebug
 
 # Copy xdebug configration for remote debugging
