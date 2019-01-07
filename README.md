@@ -1,2 +1,3 @@
 # dockerhero-php-7.3-fpm
-This image is part of Dockerhero. 
+
+https://github.com/johanvanhelden/dockerhero
