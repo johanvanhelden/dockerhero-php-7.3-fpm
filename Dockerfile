@@ -8,7 +8,7 @@ ENV TZ ${TZ}
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    mysql-client \
+    mariadb-client \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
     libmcrypt-dev \
@@ -20,7 +20,6 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libxml2-dev \
     libxslt1-dev \
-    ssmtp \
     autoconf \
     zip \
     cron \
@@ -47,8 +46,8 @@ RUN docker-php-ext-install -j$(nproc) curl \
 
 # redis module
 RUN \
-  pecl install -o -f redis \
-  &&  echo "extension=redis.so" > /usr/local/etc/php/conf.d/ext-redis.ini
+    pecl install -o -f redis \
+    &&  echo "extension=redis.so" > /usr/local/etc/php/conf.d/ext-redis.ini
 
 # ssh2 module
 RUN cd /tmp && git clone https://git.php.net/repository/pecl/networking/ssh2.git && cd /tmp/ssh2 \
@@ -70,9 +69,9 @@ COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 COPY ./dockerhero.fpm.conf /usr/local/etc/php-fpm.d/zzz-dockerhero.fpm.conf
 COPY ./dockerhero.php.ini /usr/local/etc/php/conf.d/dockerhero.php.ini
 
-# Setup sSMTP
-RUN cp /etc/ssmtp/ssmtp.conf /etc/ssmtp/ssmtp.conf.bak
-COPY ./ssmtp.conf /etc/ssmtp/ssmtp.conf
+# Setup mhsendmail
+COPY ./mhsendmail_linux_amd64 /usr/local/bin/mhsendmail
+RUN chmod +x /usr/local/bin/mhsendmail
 
 # Cleanup all downloaded packages
 RUN apt-get -y autoclean && apt-get -y autoremove && apt-get -y clean && rm -rf /var/lib/apt/lists/* && apt-get update
