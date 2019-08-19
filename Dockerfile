@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN docker-php-ext-install -j$(nproc) curl \
     && docker-php-ext-install -j$(nproc) bcmath \
+    && docker-php-ext-install -j$(nproc) exif \
     && docker-php-ext-install -j$(nproc) mbstring \
     && docker-php-ext-install -j$(nproc) iconv \
     && docker-php-ext-install -j$(nproc) interbase \
