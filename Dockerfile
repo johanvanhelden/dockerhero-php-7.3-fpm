@@ -1,6 +1,6 @@
 FROM php:7.3-fpm
 
-MAINTAINER Johan van Helden <johan@johanvanhelden.com>
+LABEL maintainer="Johan van Helden <johan@johanvanhelden.com>"
 
 # Set environment variables
 ARG TZ=Europe/Amsterdam
@@ -21,12 +21,30 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libxslt1-dev \
     autoconf \
+    wget \
     zip \
+    unzip \
     cron \
     git \
     libssh2-1-dev \
     libzip-dev \
     locales-all
+
+# Install the Oracle client
+RUN mkdir /opt/oracle \
+    && cd /opt/oracle
+
+RUN wget -O /opt/oracle/instantclient-basic-linux.x64-19.5.0.0.0dbru.zip https://github.com/johanvanhelden/dockerhero-oracle/raw/master/19.5/instantclient-basic-linux.x64-19.5.0.0.0dbru.zip && \
+    wget -O /opt/oracle/instantclient-sdk-linux.x64-19.5.0.0.0dbru.zip https://github.com/johanvanhelden/dockerhero-oracle/raw/master/19.5/instantclient-sdk-linux.x64-19.5.0.0.0dbru.zip && \
+    unzip /opt/oracle/instantclient-basic-linux.x64-19.5.0.0.0dbru.zip -d /opt/oracle && \
+    unzip /opt/oracle/instantclient-sdk-linux.x64-19.5.0.0.0dbru.zip -d /opt/oracle && \
+    rm -rf /opt/oracle/*.zip
+
+RUN ln -s /opt/oracle/instantclient_19_5/libclntshcore.so.19.1 /opt/oracle/instantclient_19_5/libclntshcore.so
+
+ENV LD_LIBRARY_PATH  /opt/oracle/instantclient_19_5:${LD_LIBRARY_PATH}
+
+RUN echo 'instantclient,/opt/oracle/instantclient_19_5/' | pecl install oci8
 
 RUN docker-php-ext-install -j$(nproc) curl \
     && docker-php-ext-install -j$(nproc) bcmath \
@@ -43,7 +61,10 @@ RUN docker-php-ext-install -j$(nproc) curl \
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
     && docker-php-ext-install imap \
     && docker-php-ext-install mysqli pdo pdo_mysql \
-    && docker-php-ext-install zip
+    && docker-php-ext-install zip \
+    && docker-php-ext-enable oci8 \
+    && docker-php-ext-configure pdo_oci --with-pdo-oci=instantclient,/opt/oracle/instantclient_19_5,19.5 \
+    && docker-php-ext-install pdo_oci
 
 # redis module
 RUN \
